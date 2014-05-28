@@ -1,51 +1,10 @@
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from functools import wraps
-from threading import RLock
-import database as db
-import tornado.ioloop
 import logging
 
 EXECUTOR = ThreadPoolExecutor(max_workers=4)
 TIMEOUT = 15
 MAX_TIME = 100
-
-class AssignOnce:
-    ''' Descriptor, which prevents accidential overwriting of attributes:
-    >>> class T:
-    ...     a = AssignOnce('a')
-    ... 
-    >>> t = T()
-    >>> t.a
-    >>> t.a = 3
-    >>> t.a = 4
-    Traceback (most recent call last):
-        ...
-    ValueError: Overwriting _a
-    >>> t.a = None
-    >>> t.a = 10
-    '''
-    
-    def __init__(self, name):
-        self.name = '_'+name
-    
-    def __get__(self, obj, owner=None):
-        return getattr(obj, self.name, None)
-    
-    def __set__(self, obj, val):
-        if val != None and getattr(obj, self.name, None) != None:
-            raise ValueError("Overwriting "+self.name)
-        setattr(obj, self.name, val)
-
-class LocationBean:
-    updater = AssignOnce('updater')
-    def __init__(self):
-        self.lock = RLock()
-        self.requests = []
-        self.responses = []
-        self.new_objs = []
-        
-loc_containers = defaultdict(LocationBean)
 
 
 class Player:

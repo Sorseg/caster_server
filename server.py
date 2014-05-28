@@ -1,42 +1,34 @@
 #!/usr/bin/python3.3
-'''
+"""
 TODO:
 - connection timeout
-'''
+"""
 import asyncio
 
 import websockets
 from operator import attrgetter
 import logging
-import sys
-logging.basicConfig(stream=sys.stdout)
+
+PORT = 7778
+
+logging.basicConfig(filename='caster.log',
+                    level=logging.DEBUG,
+                    format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
+                    datefmt='%y-%m-%d:%H:%M:%S')
 json_default = attrgetter('id')
-
-
-
-input = []
 
 
 @asyncio.coroutine
 def handler(proto, uri):
+    logging.info("CONNECTED TO", uri)
+    while proto.open:
+        message = yield from proto.recv()
+        logging.debug("MSG RECEIVED:" + message)
 
-    @asyncio.coroutine
-    def reader():
-        while proto.open:
-            print(repr((yield from proto.recv())))
-
-    @asyncio.coroutine
-    def writer():
-        while proto.open:
-            yield from proto.send("PING")
-            yield from asyncio.sleep(2)
-
-    print("CONNECTED TO", uri)
-    yield from asyncio.wait([writer(), reader()])
-    print("DONE")
+    logging.info("DISCONNECTED", uri)
 
 
-asyncio.get_event_loop().run_until_complete(websockets.serve(handler, 'localhost', 7778))
+asyncio.get_event_loop().run_until_complete(websockets.serve(handler, 'localhost', PORT))
 asyncio.get_event_loop().run_forever()
 
 

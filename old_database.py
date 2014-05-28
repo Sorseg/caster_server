@@ -1,29 +1,4 @@
 #!/usr/bin/env python3.3
-'''TODO LIST:
-- cascades
-- items, item types
-- monsters, monster types
-- size should be one number
-- requests should not be in db at all
-'''
-
-from collections import defaultdict
-from settings import *
-from sqlalchemy import Column as col, Integer, String, CHAR, Float, ForeignKey, \
-    create_engine, select, BigInteger
-from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
-from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, sessionmaker, backref, column_property
-from sqlalchemy.orm.collections import attribute_mapped_collection
-from sqlalchemy.schema import UniqueConstraint
-from threading import RLock
-import logging
-from itertools import chain
-
-
-engine = create_engine(DATABASE_CONNECTION) #echo = True
-Session = sessionmaker(bind=engine, expire_on_commit = False)
 
 circle_approx = [
                   (),
@@ -57,7 +32,7 @@ approx_maps = [
               for approx in circle_approx
               ]
 
-
+"""
 class Handler(object):
 
     def __init__(self):
@@ -107,6 +82,7 @@ class NonDbData(object):
             raise ValueError("Assigning to object without id")
         
         self.dict[obj.id] = value
+"""
 
 
 class Coord(tuple):
@@ -117,14 +93,15 @@ class Coord(tuple):
     def __str__(self):
         return "{},{}".format(*self)
 
-    def dist(c1,c2): #@NoSelf
+    def dist(c1, c2):
         x1, y1 = c1
         x2, y2 = c2
         return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
 
-class Space(object):
-    
+class Area(object):
+    """Piece of space"""
+
     def __init__(self, coord, size):
         self.coord = coord
         self.size = size
@@ -433,3 +410,4 @@ def create():
 if __name__ == '__main__':
     destroy()
     create()
+

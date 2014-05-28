@@ -103,7 +103,7 @@ def ATTACK(player, target):
     if not player.in_game:
         return
     player.send(cmd.server_error("not yet implemented"))
-    return
+
     @locking("attack", loc_id = player.loc_id)
     def attack(lock):
         with db.Handler(True) as h:
