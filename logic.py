@@ -27,26 +27,14 @@ class Player:
 
 logic_functions = {}
 
+
 def logic(func):
-    ''' Registers function as action,
+    """
+    Registers function as action,
     which can be performed with request
-    '''
+    """
     logic_functions[func.__name__.lower()] = func
     return func
-
-
-def locking(loc_id):
-    if not loc_id:
-        raise ValueError("No loc_id to lock")
-    def wrapper(func):
-        @EXECUTOR.submit
-        def job():
-            try:
-                with loc_containers[loc_id].lock:
-                    func()
-            except:
-                logging.exception("Error in locking function")
-    return wrapper
 
 
 def send_environment(player):

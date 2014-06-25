@@ -6,7 +6,6 @@ TODO:
 import asyncio
 
 import websockets
-from operator import attrgetter
 import logging
 
 PORT = 7778
@@ -15,7 +14,6 @@ logging.basicConfig(filename='caster.log',
                     level=logging.DEBUG,
                     format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
                     datefmt='%y-%m-%d:%H:%M:%S')
-json_default = attrgetter('id')
 
 
 @asyncio.coroutine
