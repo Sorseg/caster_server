@@ -26,7 +26,7 @@ def handler(proto, uri):
     logging.info("DISCONNECTED {}".format(uri))
 
 
-asyncio.get_event_loop().run_until_complete(websockets.serve(handler, 'localhost', PORT))
+asyncio.get_event_loop().run_until_complete(websockets.serve(handler, '0.0.0.0', PORT))
 asyncio.get_event_loop().run_forever()
 
 
