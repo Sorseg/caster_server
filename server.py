@@ -18,12 +18,12 @@ logging.basicConfig(filename='caster.log',
 
 @asyncio.coroutine
 def handler(proto, uri):
-    logging.info("CONNECTED TO", uri)
+    logging.info("CONNECTED TO {}".format(uri))
     while proto.open:
         message = yield from proto.recv()
         logging.debug("MSG RECEIVED:" + message)
 
-    logging.info("DISCONNECTED", uri)
+    logging.info("DISCONNECTED {}".format(uri))
 
 
 asyncio.get_event_loop().run_until_complete(websockets.serve(handler, 'localhost', PORT))
