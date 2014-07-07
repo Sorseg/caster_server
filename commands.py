@@ -1,47 +1,32 @@
-import logging
 import json
-import database as db
-import logic
-import requests
+import logging
+from websockets.server import WebSocketServerProtocol
 
-def error_sender(severity):
-    def sender(reason,**kw):
-        dic = {"what":severity,"msg":reason}
-        dic.update(kw)
-        return dic
-    return sender
-
-fail = error_sender("fail")
-error = error_sender("error")
-server_error = error_sender("server error")
 
 commands = {}
 
+
 def cmd(func):
-    " Registers a function as a command " 
-    commands[func.__name__.upper()]=func
+    """ Registers a function as a command """
+    commands[func.__name__] = func
     return func  
 
-def do(handler, actions):
-    try:
-        js = json.loads(actions)
-        if not type(js) is list:
-            js = [js]
-        for action in js:
-            cmd = action.pop('what')
-            if cmd.upper() not in commands:
-                handler.write_message(error("No such command:{} "
-            "please refer to "
-            "https://code.google.com/p/caster/wiki/casterJsonProtocol"
-            .format(cmd), actions = actions))
-                return
-            commands[cmd.upper()](handler, **action)
-    except Exception as e:
-        logging.exception("omg")
-        handler.write_message(server_error(repr(e), actions = actions))
-        
+
+def do(protocol: WebSocketServerProtocol, message: str):
+    js = json.loads(message)
+    command = js.pop('what')
+    return commands[command](protocol, **js)
+
+
 #COMMANDS:
 
+
+@cmd
+def login(protocol: WebSocketServerProtocol, login, password):
+    res = yield from protocol.send(json.dumps({"what": "creature", "name": "ZORZEROG"}))
+    logging.debug("result:{}".format(res))
+
+'''
 @cmd
 def login(handler, login, passw):
     player = handler.player 
@@ -94,3 +79,4 @@ def join(handler, crid):
 @cmd 
 def request(handler, **kw):
     pass
+'''

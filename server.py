@@ -8,6 +8,7 @@ import signal
 
 import websockets
 import logging
+import commands
 
 PORT = 7778
 
@@ -23,12 +24,18 @@ def interrupt(*args):
 
 signal.signal(signal.SIGINT, interrupt)
 
+
 @asyncio.coroutine
-def handler(proto, uri):
+def handler(protocol, uri):
     logging.info("CONNECTED TO {}".format(uri))
-    while proto.open:
-        message = yield from proto.recv()
-        logging.debug("MSG RECEIVED:" + message)
+    while protocol.open:
+        message = yield from protocol.recv()
+        try:
+            res = yield from commands.do(protocol, message)
+        except Exception as e:
+            logging.exception("commands")
+        else:
+            logging.debug("command result:{}".format(res))
 
     logging.info("DISCONNECTED {}".format(uri))
 

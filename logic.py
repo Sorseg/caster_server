@@ -13,16 +13,10 @@ class Player:
     def __init__(self, handler):
         self.handler = handler
         self.login = None
-        self.loc_id = None
-    
-    def joined(self):
-        if self.creature:
-            return True
-        return False
     
     @classmethod
-    def get_players(cls, loc_id):
-        return [p for p in cls.players.values() if p.loc_id == loc_id]
+    def get_players(cls):
+        return [p for p in cls.players.values()]
 
 
 logic_functions = {}
@@ -38,7 +32,6 @@ def logic(func):
 
 
 def send_environment(player):
-    #TODO: something if location of creature changes (global lock?)
     id = player.creature.loc_id or player.loc_id
     @locking(id)
     def _():
