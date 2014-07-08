@@ -71,10 +71,10 @@ class Area(object):
 
 class TerrainPiece:
     def __init__(self, pos, size, map_data):
-        x, y = pos
+        pos_x, pos_y = pos
         self.terrain_dict = {}
-        for x in range(x - size, x + size+1):
-            for y in range(y - size, y + size+1):
+        for x in range(pos_x - size, pos_x + size+1):
+            for y in range(pos_y - size, pos_y + size+1):
                 pixel = list(map_data[(x, y)])
                 ttype = 'wall' if all(c < 200 for c in pixel) else 'floor'
                 pixel.append(ttype)
