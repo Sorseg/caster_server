@@ -30,6 +30,8 @@ def handler(protocol, uri):
     logging.info("CONNECTED TO {}".format(uri))
     while protocol.open:
         message = yield from protocol.recv()
+        if message is None:
+            break
         try:
             res = yield from commands.do(protocol, message)
         except Exception as e:
