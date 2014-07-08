@@ -1,18 +1,32 @@
 from enum import Enum
+import json
 from peewee import SqliteDatabase, IntegerField, CharField, ForeignKeyField, CompositeKey, Model
 import os
 
+#Temporary terrain container:
+from PIL import Image
+from geometry import TerrainPiece
+
+map_data = Image.open('maps/start.png').load()
+
+
+SIGHT = 5
+
 DBNAME = 'caster.db'
 
-if os.path.exists(DBNAME):
-    os.remove(DBNAME)
-
 db = SqliteDatabase(DBNAME)
+tables_to_create = []
 
 
 def create_table(cls):
-    cls.create_table()
+    tables_to_create.append(cls)
     return cls
+
+
+def init():
+    if not os.path.exists(DBNAME):
+        for t in tables_to_create:
+            t.create_table()
 
 
 class BaseModel(Model):
@@ -44,9 +58,18 @@ class Terrain(Object):
 class Creature(Object):
 
     type = IntegerField()
+    user = CharField(unique=True)
+    name = CharField(unique=True)
 
     class Type(Enum):
         human = 1
+
+    def dict(self):
+        return dict(
+            what="creature",
+            coords=[self.pos_x, self.pos_y],
+            name=self.name
+        )
 
 
 class Item(Object):
@@ -61,3 +84,14 @@ class Weapon(Item):
     class Type(Enum):
         sword = 1
         axe = 2
+
+
+def get_creature(login, password) -> Creature:
+    return Creature.get(Creature.user == login)
+
+
+def get_environment(creature):
+    return TerrainPiece(
+        (creature.pos_x, creature.pos_y),
+        SIGHT,
+        map_data).dict()

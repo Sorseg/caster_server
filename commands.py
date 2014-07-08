@@ -1,8 +1,9 @@
 import json
 import logging
+import model
 from websockets.server import WebSocketServerProtocol
 
-
+model.init()
 commands = {}
 
 
@@ -23,8 +24,15 @@ def do(protocol: WebSocketServerProtocol, message: str):
 
 @cmd
 def login(protocol: WebSocketServerProtocol, login, password):
-    res = yield from protocol.send(json.dumps({"what": "creature", "name": "ZORZEROG"}))
-    logging.debug("result:{}".format(res))
+    crt = {"what": "creature"}
+    creature = model.get_creature(login, password)
+    crt.update(creature.dict())
+    yield from protocol.send(json.dumps(crt))
+
+    env = {"what": "environment"}
+    env.update(model.get_environment(creature))
+    yield from protocol.send(json.dumps(env))
+
 
 '''
 @cmd

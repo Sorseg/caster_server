@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 def interrupt(*args):
-    print("Exiting...")
+    print("Interrupted!")
     loop = asyncio.get_event_loop()
     loop.call_soon_threadsafe(loop.stop)
 

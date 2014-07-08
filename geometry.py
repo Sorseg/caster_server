@@ -1,3 +1,5 @@
+import json
+
 circle_approx = [
                   (),
 
@@ -65,3 +67,18 @@ class Area(object):
         if not pos:
             pos = self.coord
         return {Coord(pos)+c for c in approx_maps[self.size]}
+
+
+class TerrainPiece:
+    def __init__(self, pos, size, map_data):
+        x, y = pos
+        self.terrain_dict = {}
+        for x in range(x - size, x + size+1):
+            for y in range(y - size, y + size+1):
+                pixel = list(map_data[(x, y)])
+                ttype = 'wall' if all(c < 200 for c in pixel) else 'floor'
+                pixel.append(ttype)
+                self.terrain_dict[(x, y)] = pixel
+
+    def dict(self):
+        return {"{},{}".format(*k):p for k,p in self.terrain_dict.items()}
