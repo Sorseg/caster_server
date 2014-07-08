@@ -1,5 +1,4 @@
 import json
-import logging
 import model
 from websockets.server import WebSocketServerProtocol
 
@@ -26,6 +25,10 @@ def do(protocol: WebSocketServerProtocol, message: str):
 def login(protocol: WebSocketServerProtocol, login, password):
     crt = {"what": "creature"}
     creature = model.get_creature(login, password)
+    if creature is None:
+        yield from protocol.send(json.dumps({"what": "nocreature"}))
+        return
+
     crt.update(creature.dict())
     yield from protocol.send(json.dumps(crt))
 

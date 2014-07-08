@@ -87,7 +87,10 @@ class Weapon(Item):
 
 
 def get_creature(login, password) -> Creature:
-    return Creature.get(Creature.user == login)
+    c = Creature.select().where(Creature.user == login)
+    if c.count() < 1:
+        return
+    return c.get()
 
 
 def get_environment(creature):
