@@ -40,7 +40,7 @@ def handler(protocol, uri):
             logging.exception("commands")
         else:
             logging.debug("command result:{}".format(res))
-
+    player.creature.save()
     logging.info("DISCONNECTED {}".format(uri))
 
 if __name__ == '__main__':
