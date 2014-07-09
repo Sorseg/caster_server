@@ -1,6 +1,7 @@
 import json
+from logic import Player
 import model
-from websockets.server import WebSocketServerProtocol
+
 
 model.init()
 commands = {}
@@ -12,29 +13,45 @@ def cmd(func):
     return func  
 
 
-def do(protocol: WebSocketServerProtocol, message: str):
+def do(protocol: Player, message: str):
     js = json.loads(message)
     command = js.pop('what')
     return commands[command](protocol, **js)
 
 
+def send_environment(player):
+    env = {"what": "environment"}
+    env.update(model.get_environment(player.creature))
+    yield from player.send(env)
+
 #COMMANDS:
 
 
 @cmd
-def login(protocol: WebSocketServerProtocol, login, password):
-    crt = {"what": "creature"}
+def login(player: Player, login, password):
+
     creature = model.get_creature(login, password)
     if creature is None:
-        yield from protocol.send(json.dumps({"what": "nocreature"}))
+        yield from player.protocol.send(json.dumps({"what": "nocreature"}))
         return
-
+    player.creature = creature
+    player.username = login
+    crt = {"what": "creature"}
     crt.update(creature.dict())
-    yield from protocol.send(json.dumps(crt))
+    yield from player.send(crt)
+    yield from send_environment(player)
 
-    env = {"what": "environment"}
-    env.update(model.get_environment(creature))
-    yield from protocol.send(json.dumps(env))
+
+@cmd
+def walk(player: Player, where):
+    c = player.creature
+    #TODO: add validation
+    c.pos_x, c.pos_y = where
+    yield from player.send(dict(
+        what="walk",
+        to=where
+    ))
+    yield from send_environment(player)
 
 
 '''

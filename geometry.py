@@ -71,7 +71,7 @@ class Area(object):
 
 class TerrainPiece:
     def __init__(self, pos, size, map_data):
-        pos_x, pos_y = pos
+        pos_x, pos_y = map(int, pos)
         self.terrain_dict = {}
         for x in range(pos_x - size, pos_x + size+1):
             for y in range(pos_y - size, pos_y + size+1):
