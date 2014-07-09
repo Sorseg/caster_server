@@ -71,7 +71,7 @@ class Area(object):
 
 class TerrainPiece:
     def __init__(self, pos, size, map_data):
-        pos_x, pos_y = map(int, pos)
+        pos_x, pos_y = pos
         self.terrain_dict = {}
         for x in range(pos_x - size, pos_x + size+1):
             for y in range(pos_y - size, pos_y + size+1):
@@ -81,4 +81,8 @@ class TerrainPiece:
                 self.terrain_dict[(x, y)] = pixel
 
     def dict(self):
-        return {"{},{}".format(*k):p for k,p in self.terrain_dict.items()}
+        return {"{},{}".format(*k): p for k, p in self.terrain_dict.items()}
+
+
+class ActionSite:
+    pass

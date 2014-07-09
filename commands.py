@@ -45,7 +45,7 @@ def login(player: Player, login, password):
 def walk(player: Player, where):
     c = player.creature
     #TODO: add validation
-    c.pos_x, c.pos_y = where
+    c.pos_x, c.pos_y = map(int, where)
     yield from player.send(dict(
         what="walk",
         to=where
