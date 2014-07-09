@@ -24,3 +24,5 @@ class Player:
 
     def disconnected(self):
         self.players.pop(self.username, None)
+        if self.creature:
+            self.creature.save()
