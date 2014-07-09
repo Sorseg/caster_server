@@ -30,14 +30,13 @@ def send_environment(player):
 @cmd
 def login(player: Player, login, password):
 
-    creature = model.get_creature(login, password)
-    if creature is None:
-        yield from player.protocol.send(json.dumps({"what": "nocreature"}))
+    error = player.login(login, password)
+    if error:
+        yield from player.protocol.send(json.dumps({"what": error}))
         return
-    player.creature = creature
-    player.username = login
+
     crt = {"what": "creature"}
-    crt.update(creature.dict())
+    crt.update(player.creature.dict())
     yield from player.send(crt)
     yield from send_environment(player)
 
