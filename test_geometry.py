@@ -6,13 +6,14 @@ def put(c):
     print(c, end='')
 
 
-def draw(cells):
+def draw(a):
+    cells = a.cells()
     for y in range(20):
         for x in range(20):
             char = '.'
             if (x, y) in cells:
                 char = '#'
-            if (x, y) == (5, 5):
+            if (x, y) == a.pos:
                 char = {'.': '?', '#': '@'}[char]
 
             put(char)
@@ -35,3 +36,8 @@ class TestGeometry(unittest.TestCase):
         for i in range(10):
             a = geometry.Area((5, 5), i).cells()
             self.assertEqual(len(a), i*i)
+
+    def test_circle(self):
+        for i in range(5, 20):
+            a = geometry.Area((0, 0), i, True)
+            #draw(a)

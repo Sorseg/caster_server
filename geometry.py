@@ -1,72 +1,26 @@
-import json
-
-circle_approx = [
-                  (),
-
-                  ('#'),
-
-                  ('##',
-                   '##'),
-
-                  ('###',
-                   '###',
-                   '###'),
-
-                  (' ## ',
-                   '####',
-                   '####',
-                   ' ## '),
-
-                  (' ### ',
-                   '#####',
-                   '#####',
-                   '#####',
-                   ' ### ')
-                ]
+from collections import namedtuple
+import math
 
 
-# list of coordinate approximations for large objects
-approx_maps = [
-              {(x,y) for y, line in enumerate(approx)
-                     for x, c in enumerate(line) if c =='#'}
-              for approx in circle_approx
-              ]
+class Coord(namedtuple('Coord', 'x, y')):
+
+    def __add__(self, other):
+        x, y = other
+        return Coord(self.x + x, self.y + y)
+
+    def __sub__(self, other):
+        x, y = other
+        return Coord(self.x - x, self.y - y)
+
+    def __truediv__(self, other):
+        return Coord(self.x/other, self.y/other)
 
 
-class Coord(tuple):
 
-    def __add__(self, c):
-        return Coord([i + j for i, j in zip(self, c)])
-
-    def __str__(self):
-        return "{},{}".format(*self)
-
-    def dist(c1, c2):
-        x1, y1 = c1
-        x2, y2 = c2
-        return ((x2-x1)**2 + (y2-y1)**2)**0.5
-
-
-class Area(object):
-    """Piece of space"""
-
-    def __init__(self, coord, size):
-        self.coord = coord
-        self.size = size
-
-    def fits(self, new_pos, location):
-
-        floor = {coordinate for coordinate, cell in location.cells.items() if cell.type != 'wall' }
-        occupied = set()
-        if location.creatures:
-            occupied.update(*[cr.space().cells() for cr in location.creatures])
-        new_cells = self.cells(new_pos)
-        return (new_cells <= floor) and not (new_cells & occupied)
-
-    def cells(self, pos = None):
-        if not pos:
-            pos = self.coord
-        return {Coord(pos)+c for c in approx_maps[self.size]}
+def dst_sq(p1, p2):
+    dx = p2[0]-p1[0]
+    dy = p2[1]-p1[1]
+    return dx*dx+dy*dy
 
 
 class TerrainPiece:
@@ -84,5 +38,34 @@ class TerrainPiece:
         return {"{},{}".format(*k): p for k, p in self.terrain_dict.items()}
 
 
-class ActionSite:
-    pass
+class Area(object):
+    """Piece of space"""
+
+    def __init__(self, pos, size, circle=False):
+        self.pos = Coord(*pos)
+        self.size = size
+        self.circle = circle
+        if self.circle:
+            self._cells = self._circle
+        else:
+            self._cells = self._square
+
+    def cells(self, pos=None):
+        if self.size == 0:
+            return set()
+        if pos is None:
+            pos = self.pos
+            return self._cells(pos)
+
+    def _square(self, pos):
+        rng = range(self.size)
+        return set(pos+(x, y) for x in rng for y in rng)
+
+    def _circle(self, pos):
+        sz = self.size - 1
+        r = sz/2
+        max_dst = r*r+1
+        center = pos + Coord(sz, sz) / 2
+        print(r, center, max_dst)
+        res = set(p for p in self._square(pos) if dst_sq(p, center) <= max_dst)
+        return res
