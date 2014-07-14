@@ -1,4 +1,5 @@
 import json
+from geometry import Coord
 from logic import Player, LoginException
 import model
 
@@ -46,8 +47,17 @@ def login(player: Player, login, password):
 @cmd
 def walk(player: Player, where):
     c = player.creature
-    #TODO: add validation
-    c.pos_x, c.pos_y = map(int, where)
+    where = Coord(*map(int, where))
+    print(c.pos, where)
+    if c.pos.dst_sq(where) > 2:
+        yield from player.send(dict(
+            what="error",
+            msg="Walking too far"
+        ))
+        return
+
+    c.pos = where
+
     yield from player.send(dict(
         what="walk",
         to=where

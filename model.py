@@ -5,7 +5,7 @@ import os
 
 #Temporary terrain container:
 from PIL import Image
-from geometry import TerrainPiece
+from geometry import TerrainPiece, Coord
 
 map_data = Image.open('maps/start.png').load()
 
@@ -38,6 +38,14 @@ class Object(BaseModel):
     pos_x = IntegerField(null=True)
     pos_y = IntegerField(null=True)
 
+    @property
+    def pos(self):
+        return Coord(self.pos_x, self.pos_y)
+
+    @pos.setter
+    def pos(self, val):
+        print(val)
+        self.pos_x, self.pos_y = val
 
 @create_table
 class Terrain(Object):
