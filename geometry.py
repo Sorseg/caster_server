@@ -90,6 +90,5 @@ class Area(object):
         r = sz/2
         max_dst = r*r+1
         center = pos + Coord(sz, sz) / 2
-        print(r, center, max_dst)
         res = set(p for p in self._square(pos) if center.dst_sq(p) <= max_dst)
         return res
