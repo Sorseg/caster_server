@@ -1,5 +1,4 @@
 from collections import namedtuple
-import math
 
 
 class Coord(namedtuple('Coord', 'x, y')):
@@ -15,12 +14,12 @@ class Coord(namedtuple('Coord', 'x, y')):
     def __truediv__(self, other):
         return Coord(self.x/other, self.y/other)
 
-
-
-def dst_sq(p1, p2):
-    dx = p2[0]-p1[0]
-    dy = p2[1]-p1[1]
-    return dx*dx+dy*dy
+    def dst_sq(self, other):
+        x1, y1 = self
+        x2, y2 = other
+        dx = x2 - x1
+        dy = y2 - y1
+        return dx*dx + dy*dy
 
 
 class TerrainPiece:
@@ -41,14 +40,39 @@ class TerrainPiece:
 class Area(object):
     """Piece of space"""
 
-    def __init__(self, pos, size, circle=False):
-        self.pos = Coord(*pos)
+    def __init__(self, size: int, pos: (tuple, Coord)=(0, 0), circle: bool=False):
+        self._pos = pos
         self.size = size
         self.circle = circle
         if self.circle:
             self._cells = self._circle
         else:
             self._cells = self._square
+
+    @property
+    def pos(self)->Coord:
+        return Coord(*self._pos)
+
+    @pos.setter
+    def pos(self, value: (tuple, Coord)):
+        self._pos = value
+
+    @property
+    def center(self):
+        r = self.size//2
+        return self.pos + (r, r)
+
+    @center.setter
+    def center(self, val):
+        r = self.size//2
+        self.pos = Coord(*val) - (r, r)
+
+    def __and__(self, other):
+        l = self.pos.x + self.size < other.pos.x
+        r = self.pos.x > other.pos.x + other.size
+        t = self.pos.y + self.size < other.pos.y
+        b = self.pos.y > other.pos.y + other.size
+        return not any((l, r, t, b))
 
     def cells(self, pos=None):
         if self.size == 0:
@@ -67,5 +91,5 @@ class Area(object):
         max_dst = r*r+1
         center = pos + Coord(sz, sz) / 2
         print(r, center, max_dst)
-        res = set(p for p in self._square(pos) if dst_sq(p, center) <= max_dst)
+        res = set(p for p in self._square(pos) if center.dst_sq(p) <= max_dst)
         return res

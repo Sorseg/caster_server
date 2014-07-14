@@ -28,16 +28,30 @@ class TestGeometry(unittest.TestCase):
         self.assertEqual(c.y, 12)
         self.assertEqual(c+(2, 1), (13, 13))
 
+    def test_area_center(self):
+        c = geometry.Area(6)
+        c.center = (3, 3)
+        self.assertEqual(c.pos, (0, 0))
+
     def test_coord_div(self):
         c = geometry.Coord(6, 6)
         self.assertEqual(c/2, (3, 3))
 
+    def test_overlap(self):
+        A = geometry.Area
+        c1 = A(5, (1, 1))
+        c2 = A(5, (2, 2))
+        self.assertTrue(c1 & c2)
+        c1 = A(5)
+        c2 = A(5, (15, 15))
+        self.assertFalse(c1 & c2)
+
     def test_area(self):
         for i in range(10):
-            a = geometry.Area((5, 5), i).cells()
+            a = geometry.Area(i, (5, 5)).cells()
             self.assertEqual(len(a), i*i)
 
     def test_circle(self):
         for i in range(5, 20):
-            a = geometry.Area((0, 0), i, True)
-            #draw(a)
+            a = geometry.Area(i, (0, 0), True)
+            draw(a)
