@@ -2,6 +2,11 @@ import json
 import model
 
 
+class LoginException(Exception):
+    def __init__(self, msg):
+        self.msg = msg
+
+
 class Player:
     players = {}
     creature = None
@@ -13,10 +18,10 @@ class Player:
 
     def login(self, login, password):
         if login in self.players:
-            return 'already logged in'
+            raise LoginException('already logged in')
         creature = model.get_creature(login, password)
         if creature is None:
-            return 'nocreature'
+            raise LoginException('no creature')
 
         self.creature = creature
         self.username = login

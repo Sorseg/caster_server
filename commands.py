@@ -1,5 +1,5 @@
 import json
-from logic import Player
+from logic import Player, LoginException
 import model
 
 
@@ -30,9 +30,11 @@ def send_environment(player):
 @cmd
 def login(player: Player, login, password):
 
-    error = player.login(login, password)
-    if error:
-        yield from player.protocol.send(json.dumps({"what": error}))
+    try:
+        player.login(login, password)
+    except LoginException as e:
+        yield from player.protocol.send(json.dumps({"what": "error",
+                                                    "msg": "Login failed: {}".format(e.msg)}))
         return
 
     crt = {"what": "creature"}
