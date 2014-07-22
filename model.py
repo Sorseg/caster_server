@@ -24,9 +24,8 @@ def create_table(cls):
 
 
 def init():
-    if not os.path.exists(DBNAME):
-        for t in tables_to_create:
-            t.create_table()
+    for t in tables_to_create:
+        t.create_table()
 
 
 class BaseModel(Model):
@@ -44,7 +43,6 @@ class Object(BaseModel):
 
     @pos.setter
     def pos(self, val):
-        print(val)
         self.pos_x, self.pos_y = val
 
 @create_table
@@ -68,6 +66,8 @@ class Creature(Object):
     type = IntegerField()
     user = CharField(unique=True)
     name = CharField(unique=True)
+    max_hp = IntegerField()
+    hp = IntegerField()
 
     class Type(Enum):
         human = 1

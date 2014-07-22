@@ -1,68 +1,34 @@
 import json
-from geometry import Coord
 from logic import Player, LoginException
-import model
+from rpc import RPCBase
 
 
-model.init()
-commands = {}
+class Commands(RPCBase):
 
+    def __init__(self, player: Player):
+        self.player = player
 
-def cmd(func):
-    """ Registers a function as a command """
-    commands[func.__name__] = func
-    return func  
+    def do_login(self, login, password):
 
+        try:
+            self.player.login(login, password)
+        except LoginException as e:
+            yield from self.player.protocol.send(json.dumps({"what": "error",
+                                                        "msg": "Login failed: {}".format(e.msg)}))
+            return
 
-def do(protocol: Player, message: str):
-    js = json.loads(message)
-    command = js.pop('what')
-    return commands[command](protocol, **js)
+        crt = {"what": "creature"}
+        crt.update(self.player.creature.dict())
+        yield from self.player.send(crt)
+        yield from self.player.send_environment()
 
+    def do_action(self, **action):
+        self.player.action = action
+        return self.player.site.process_turn()
 
-def send_environment(player):
-    env = {"what": "environment"}
-    env.update(model.get_environment(player.creature))
-    yield from player.send(env)
-
-#COMMANDS:
-
-
-@cmd
-def login(player: Player, login, password):
-
-    try:
-        player.login(login, password)
-    except LoginException as e:
-        yield from player.protocol.send(json.dumps({"what": "error",
-                                                    "msg": "Login failed: {}".format(e.msg)}))
-        return
-
-    crt = {"what": "creature"}
-    crt.update(player.creature.dict())
-    yield from player.send(crt)
-    yield from send_environment(player)
-
-
-@cmd
-def walk(player: Player, where):
-    c = player.creature
-    where = Coord(*map(int, where))
-    print(c.pos, where)
-    if c.pos.dst_sq(where) > 2:
-        yield from player.send(dict(
-            what="error",
-            msg="Walking too far"
-        ))
-        return
-
-    c.pos = where
-
-    yield from player.send(dict(
-        what="walk",
-        to=where
-    ))
-    yield from send_environment(player)
+    def disconnect(self):
+        if self.player:
+            self.player.disconnect()
 
 
 '''

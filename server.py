@@ -9,6 +9,7 @@ import signal
 import websockets
 import logging
 import commands
+from commands import Commands
 from logic import Player
 
 PORT = 7778
@@ -30,17 +31,18 @@ signal.signal(signal.SIGINT, interrupt)
 def handler(protocol, uri):
     player = Player()
     player.protocol = protocol
+    command_dispatcher = Commands(player)
     while protocol.open:
         message = yield from protocol.recv()
         if message is None:
             break
         try:
-            res = yield from commands.do(player, message)
+            res = yield from command_dispatcher(message)
         except Exception as e:
-            logging.exception("commands")
+            logging.exception("Message:{!r}".format(message))
         else:
             logging.debug("command result:{}".format(res))
-    player.disconnected()
+    command_dispatcher.disconnect()
     logging.info("DISCONNECTED {}".format(uri))
 
 if __name__ == '__main__':
