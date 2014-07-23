@@ -7,7 +7,19 @@ def put(c):
 
 
 def draw(a):
+    screen = [['.' for x in range(20)] for y in range(20)]
     cells = a.cells()
+
+    for c in cells:
+        screen[c.y][c.x] = '#'
+
+    for c in a.cells(fill=False):
+        screen[c.y][c.x] = ['?', '+'][screen[c.y][c.x] == '#']
+
+    for y in screen:
+        print(*y, sep='')
+
+    '''
     for y in range(20):
         for x in range(20):
             char = '.'
@@ -18,6 +30,7 @@ def draw(a):
 
             put(char)
         print()
+    '''
 
 
 class TestGeometry(unittest.TestCase):

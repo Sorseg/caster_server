@@ -3,8 +3,8 @@ import json
 import random
 from actions import Actions
 import geometry
+from geometry import CoordDescriptor
 import model
-import actions
 
 
 class LoginException(Exception):
@@ -19,6 +19,7 @@ class Player:
     username = None
     site = None
     action = None
+    visible_area = geometry.Area(model.SIGHT*2, circle=True)
 
     def send(self, msg: dict):
         return self.protocol.send(json.dumps(msg))
@@ -73,17 +74,21 @@ class ActionSite(geometry.Area):
         return self.action_dispatcher(self.player.action)
 
     def generate_enemies(self):
-        if random.random()*100 < 1:
+        if random.randint(0, 99) < 1:
             pos = (500, 500) #NO!
             self.mobs.append(Mob(Mob.Type.zombie, pos))
 
+
 class Mob:
+
     class Type(enum.Enum):
         zombie = 1
 
     def __init__(self, pos, type):
         self.type = type
-        self.pos = pos
+        self._pos = pos
+
+    pos = CoordDescriptor()
 
 
 

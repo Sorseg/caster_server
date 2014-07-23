@@ -22,23 +22,20 @@ class Coord(namedtuple('Coord', 'x, y')):
         return dx*dx + dy*dy
 
 
-class TerrainPiece:
-    def __init__(self, pos, size, map_data):
-        pos_x, pos_y = pos
-        self.terrain_dict = {}
-        for x in range(pos_x - size, pos_x + size+1):
-            for y in range(pos_y - size, pos_y + size+1):
-                pixel = list(map_data[(x, y)])
-                ttype = 'wall' if all(c < 200 for c in pixel) else 'floor'
-                pixel.append(ttype)
-                self.terrain_dict[(x, y)] = pixel
+class CoordDescriptor:
 
-    def dict(self):
-        return {"{},{}".format(*k): p for k, p in self.terrain_dict.items()}
+    def __set__(self, instance, value):
+        instance._pos = value
+
+    def __get__(self, instance, owner):
+        return Coord(*instance._pos)
+
 
 
 class Area(object):
     """Piece of space"""
+
+    pos = CoordDescriptor()
 
     def __init__(self, size: int, pos: (tuple, Coord)=(0, 0), circle: bool=False):
         self._pos = pos
@@ -48,14 +45,6 @@ class Area(object):
             self._cells = self._circle
         else:
             self._cells = self._square
-
-    @property
-    def pos(self)->Coord:
-        return Coord(*self._pos)
-
-    @pos.setter
-    def pos(self, value: (tuple, Coord)):
-        self._pos = value
 
     @property
     def center(self):
@@ -92,3 +81,20 @@ class Area(object):
         center = pos + Coord(sz, sz) / 2
         res = set(p for p in self._square(pos) if center.dst_sq(p) <= max_dst)
         return res
+
+
+'''
+class TerrainPiece(Area):
+    def __init__(self, pos, size, map_data):
+        super().__init__(size, pos, circle=True)
+        self.terrain_dict = {}
+        for x in range(pos_x - size, pos_x + size+1):
+            for y in range(pos_y - size, pos_y + size+1):
+                pixel = list(map_data[(x, y)])
+                ttype = 'wall' if all(c < 200 for c in pixel) else 'floor'
+                pixel.append(ttype)
+                self.terrain_dict[(x, y)] = pixel
+
+    def dict(self):
+        return {"{},{}".format(*k): p for k, p in self.terrain_dict.items()}
+'''
