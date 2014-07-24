@@ -6,15 +6,15 @@ def put(c):
     print(c, end='')
 
 
-def draw(a):
+def draw(cells):
     screen = [['.' for x in range(20)] for y in range(20)]
-    cells = a.cells()
+    #cells = a.cells()
 
     for c in cells:
-        screen[c.y][c.x] = '#'
-
-    for c in a.cells(fill=False):
-        screen[c.y][c.x] = ['?', '+'][screen[c.y][c.x] == '#']
+        if screen[c.y][c.x] == '#':
+            screen[c.y][c.x] = '!'
+        else:
+            screen[c.y][c.x] = '#'
 
     for y in screen:
         print(*y, sep='')
@@ -62,9 +62,44 @@ class TestGeometry(unittest.TestCase):
     def test_area(self):
         for i in range(10):
             a = geometry.Area(i, (5, 5)).cells()
-            self.assertEqual(len(a), i*i)
+            self.assertEqual(len(list(a)), i*i)
 
     def test_circle(self):
         for i in range(5, 20):
-            a = geometry.Area(i, (0, 0), True)
-            draw(a)
+            a = geometry.Area(i, (0, 0), circle=True)
+            print(i)
+            draw(a.cells())
+
+    def test_line(self):
+        l1 = geometry.Line((4, 3))
+        self.assertEqual(list(l1.cells()), [
+            (0, 0),
+            (1, 0),
+            (2, 1),
+            (3, 2),
+            (4, 3)
+        ])
+        l2 = geometry.Line((3, 4))
+        self.assertEqual(list(l2.cells()), [
+            (0, 0),
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (3, 4)
+        ])
+        l = geometry.Line((2, 2), (4, 5))
+        self.assertEqual(list(l.cells()), [
+            (2, 2),
+            (2, 3),
+            (3, 4),
+            (4, 5)
+        ])
+        self.assertEqual(list(l.cells()),
+                         list(geometry.Line((2, 3)).cells((2, 2))))
+
+    def test_perimeter(self):
+        a = geometry.Area(5)
+        #draw(a.perimeter())
+        #draw(a.cells())
+        self.assertTrue(set(a.cells()) >= set(a.perimeter()))
+

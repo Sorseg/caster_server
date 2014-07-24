@@ -1,4 +1,5 @@
 from collections import namedtuple
+import math
 
 
 class Coord(namedtuple('Coord', 'x, y')):
@@ -24,11 +25,50 @@ class Coord(namedtuple('Coord', 'x, y')):
 
 class CoordDescriptor:
 
+    def __init__(self, name='_pos'):
+        self.name = name
+
     def __set__(self, instance, value):
-        instance._pos = value
+        setattr(instance, self.name, value)
 
     def __get__(self, instance, owner):
-        return Coord(*instance._pos)
+        return Coord(*getattr(instance, self.name, (0, 0)))
+
+
+class Line:
+
+    start = CoordDescriptor('_start')
+    end = CoordDescriptor('_end')
+
+    def __init__(self, start, end=None):
+        if end is None:
+            self.start = (0, 0)
+            self.end = start
+        else:
+            self.start = start
+            self.end = end
+
+    def cells(self, pos=None):
+        """
+        :return: generator of all cells belonging to this line
+        computed by Bresenham's line algorithm
+        """
+        if pos is None:
+            pos = self.start
+        else:
+            pos = Coord(*pos)
+        d = self.end - self.start
+        steep = abs(d.y) > abs(d.x)
+
+        #if d.x == 0:
+        #    return (pos+(0, i) for i in range(d.y))
+        max_l = max(abs(i) for i in d)
+        min_l = min(abs(i) for i in d)
+        for i in range((d.y if steep else d.x) + 1):
+            if not steep:
+                yield pos+(i, i*min_l//max_l)
+            else:
+                yield pos+(i*min_l//max_l, i)
 
 
 
@@ -37,14 +77,21 @@ class Area(object):
 
     pos = CoordDescriptor()
 
-    def __init__(self, size: int, pos: (tuple, Coord)=(0, 0), circle: bool=False):
+    def __init__(self, size: int, pos: (tuple, Coord)=(0, 0), circle: bool=False, center: (tuple, Coord)=None):
+        """
+        :param center overrides pos
+        """
         self._pos = pos
+
         self.size = size
         self.circle = circle
         if self.circle:
             self._cells = self._circle
         else:
             self._cells = self._square
+
+        if center is not None:
+            self.center = center
 
     @property
     def center(self):
@@ -72,15 +119,32 @@ class Area(object):
 
     def _square(self, pos):
         rng = range(self.size)
-        return set(pos+(x, y) for x in rng for y in rng)
+        for x in rng:
+            for y in rng:
+                yield pos+(x, y)
 
     def _circle(self, pos):
         sz = self.size - 1
         r = sz/2
         max_dst = r*r+1
         center = pos + Coord(sz, sz) / 2
-        res = set(p for p in self._square(pos) if center.dst_sq(p) <= max_dst)
-        return res
+        for p in self._square(pos):
+            if center.dst_sq(p) <= max_dst:
+                yield p
+
+    def perimeter(self, circle = None):
+        sz = self.size - 1
+        if circle is None:
+            circle = self.circle
+
+        if not circle:
+            yield from (self.pos + (0, i) for i in range(sz))
+            yield from (self.pos + (i + 1, 0) for i in range(sz))
+            yield from (self.pos + (sz, i + 1) for i in range(sz))
+            yield from (self.pos + (i, sz) for i in range(sz))
+            return
+
+
 
 
 '''
