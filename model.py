@@ -12,7 +12,7 @@ import geometry
 map_data = Image.open('maps/start.png').load()
 Pixel = collections.namedtuple('Pixel', 'r g b ttype')
 
-SIGHT = 5
+SIGHT = 8
 
 DBNAME = 'caster.db'
 
@@ -70,6 +70,7 @@ class Creature(Object):
     name = CharField(unique=True)
     max_hp = IntegerField()
     hp = IntegerField()
+    sight = SIGHT
 
     class Type(Enum):
         human = 1
@@ -77,8 +78,9 @@ class Creature(Object):
     def dict(self):
         return dict(
             what="creature",
-            coords=[self.pos_x, self.pos_y],
-            name=self.name
+            coords=self.pos,
+            name=self.name,
+            sight=self.sight
         )
 
 

@@ -1,11 +1,13 @@
 import enum
 import json
 import random
+import itertools
 from actions import Actions
 import geometry
 from geometry import CoordDescriptor
 import model
 
+object_counter = itertools.count()
 
 class LoginException(Exception):
     def __init__(self, msg):
@@ -70,12 +72,16 @@ class ActionSite(geometry.Area):
 
     def process_turn(self):
         yield from self.action_dispatcher(self.player.action)
-        if random.randint(0, 99) < 1:
+        if random.randint(0, 4) < 1:
             self.generate_enemies()
         yield from self.send_environment()
 
     def generate_enemies(self):
-        p = random.choice(list(self.perimeter()))
+        gen_perimeter = geometry.Area(model.SIGHT*2+2, center=self.center).perimeter()
+        cells = list(c for c in gen_perimeter if model.get_pixel(c).ttype == 'floor')
+        if not cells:
+            return
+        p = random.choice(cells)
         self.mobs.append(Mob(p, Mob.Type.zombie))
 
     def send_environment(self):
@@ -85,7 +91,8 @@ class ActionSite(geometry.Area):
         yield from self.player.send(env)
 
     def get_object_dict(self):
-        return {"{},{}".format(*m.pos): m.dict() for m in self.mobs}
+        return {"{}".format(o.id): o.dict() for o in self.mobs
+                if o.pos.dst_sq(self.player.creature.pos) <= model.SIGHT*model.SIGHT}
 
 
 class Mob:
@@ -97,11 +104,13 @@ class Mob:
         self.type = type_
         self._pos = pos
         self.hp = 20
+        self.id = next(object_counter)
 
     def dict(self):
         return {
             "type": "zombie",
-            "hp": self.hp
+            "hp": self.hp,
+            "pos": self.pos
         }
 
     pos = CoordDescriptor()
