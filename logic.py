@@ -36,17 +36,15 @@ class Player:
         self.players[self.username] = self
         self.site = ActionSite(self)
 
-    def send_environment(self):
-        env = {"what": "environment"}
-        env.update(model.get_environment(self.creature))
-        yield from self.send(env)
-
     def disconnect(self):
         self.players.pop(self.username, None)
         if self.creature:
             self.creature.save()
         if self.site:
             self.site.disconnect()
+
+    def send_environment(self):
+        return self.site.send_environment()
 
 
 class ActionSite(geometry.Area):
@@ -60,23 +58,34 @@ class ActionSite(geometry.Area):
     def __init__(self, player: Player):
         self.player = player
         self.size = model.SIGHT*4
-        super().__init__(self.size)
+        super().__init__(self.size, center=self.player.creature.pos)
         self.state = self.States.FAST_TRAVEL
         self.sites.append(self)
         self.mobs = []
         self.action_dispatcher = Actions(self.player, 'type')
+        self.generate_enemies()
 
     def disconnect(self):
         self.sites.remove(self)
 
     def process_turn(self):
-        self.generate_enemies()
-        return self.action_dispatcher(self.player.action)
+        yield from self.action_dispatcher(self.player.action)
+        if random.randint(0, 99) < 1:
+            self.generate_enemies()
+        yield from self.send_environment()
 
     def generate_enemies(self):
-        if random.randint(0, 99) < 1:
-            pos = (500, 500) #NO!
-            self.mobs.append(Mob(Mob.Type.zombie, pos))
+        p = random.choice(list(self.perimeter()))
+        self.mobs.append(Mob(p, Mob.Type.zombie))
+
+    def send_environment(self):
+        env = {"what": "environment"}
+        env.update(model.get_environment(self.player.creature))
+        env.update(objects=self.get_object_dict())
+        yield from self.player.send(env)
+
+    def get_object_dict(self):
+        return {"{},{}".format(*m.pos): m.dict() for m in self.mobs}
 
 
 class Mob:
@@ -84,9 +93,16 @@ class Mob:
     class Type(enum.Enum):
         zombie = 1
 
-    def __init__(self, pos, type):
-        self.type = type
+    def __init__(self, pos: tuple, type_):
+        self.type = type_
         self._pos = pos
+        self.hp = 20
+
+    def dict(self):
+        return {
+            "type": "zombie",
+            "hp": self.hp
+        }
 
     pos = CoordDescriptor()
 

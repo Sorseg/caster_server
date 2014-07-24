@@ -20,9 +20,9 @@ class Actions(RPCBase):
             return
 
         c.pos = where
+        self.player.site.pos = where
 
         yield from self.player.send(dict(
             what="walk",
             to=where
         ))
-        yield from self.player.send_environment()

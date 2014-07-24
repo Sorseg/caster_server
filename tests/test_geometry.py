@@ -98,7 +98,7 @@ class TestGeometry(unittest.TestCase):
                          list(geometry.Line((2, 3)).cells((2, 2))))
 
     def test_perimeter(self):
-        a = geometry.Area(5)
+        a = geometry.Area(5, (4, 4))
         #draw(a.perimeter())
         #draw(a.cells())
         self.assertTrue(set(a.cells()) >= set(a.perimeter()))

@@ -71,13 +71,12 @@ class Line:
                 yield pos+(i*min_l//max_l, i)
 
 
-
 class Area(object):
     """Piece of space"""
 
     pos = CoordDescriptor()
 
-    def __init__(self, size: int, pos: (tuple, Coord)=(0, 0), circle: bool=False, center: (tuple, Coord)=None):
+    def __init__(self, size: int, pos: tuple=(0, 0), circle: bool=False, center: (tuple, Coord)=None):
         """
         :param center overrides pos
         """
@@ -132,7 +131,7 @@ class Area(object):
             if center.dst_sq(p) <= max_dst:
                 yield p
 
-    def perimeter(self, circle = None):
+    def perimeter(self, circle=None):
         sz = self.size - 1
         if circle is None:
             circle = self.circle
@@ -143,6 +142,8 @@ class Area(object):
             yield from (self.pos + (sz, i + 1) for i in range(sz))
             yield from (self.pos + (i, sz) for i in range(sz))
             return
+        else:
+            raise NotImplementedError()
 
 
 
