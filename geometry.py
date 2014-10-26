@@ -94,7 +94,8 @@ class Area(object):
 
     @property
     def center(self):
-        r = self.size//2
+        sz = self.size - 1
+        r = sz/2
         return self.pos + (r, r)
 
     @center.setter
@@ -103,10 +104,14 @@ class Area(object):
         self.pos = Coord(*val) - (r, r)
 
     def __and__(self, other):
-        l = self.pos.x + self.size < other.pos.x
-        r = self.pos.x > other.pos.x + other.size
-        t = self.pos.y + self.size < other.pos.y
-        b = self.pos.y > other.pos.y + other.size
+        s = self.pos
+        ss = self.size
+        o = other.pos
+        os = other.size
+        l = s.x + ss < o.x
+        r = s.x > o.x + os
+        t = s.y + ss < o.y
+        b = s.y > o.y + os
         return not any((l, r, t, b))
 
     def cells(self, pos=None):
@@ -123,10 +128,10 @@ class Area(object):
                 yield pos+(x, y)
 
     def _circle(self, pos):
-        sz = self.size - 1
-        r = sz/2
-        max_dst = r*r+1
-        center = pos + Coord(sz, sz) / 2
+
+        r = self.size//2
+        max_dst = r*r
+        center = self.center
         for p in self._square(pos):
             if center.dst_sq(p) <= max_dst:
                 yield p

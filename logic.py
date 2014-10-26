@@ -59,11 +59,11 @@ class ActionSite(geometry.Area):
 
     def __init__(self, player: Player):
         self.player = player
-        self.size = model.SIGHT*4
+        self.size = model.SIGHT*4+1
         super().__init__(self.size, center=self.player.creature.pos)
         self.state = self.States.FAST_TRAVEL
         self.sites.append(self)
-        self.mobs = []
+        self.mobs = {}
         self.action_dispatcher = Actions(self.player, 'type')
         self.generate_enemies()
 
@@ -77,12 +77,13 @@ class ActionSite(geometry.Area):
         yield from self.send_environment()
 
     def generate_enemies(self):
-        gen_perimeter = geometry.Area(model.SIGHT*2+2, center=self.center).perimeter()
+        gen_perimeter = geometry.Area(model.SIGHT*2+3, center=self.center).perimeter()
         cells = list(c for c in gen_perimeter if model.get_pixel(c).ttype == 'floor')
         if not cells:
             return
         p = random.choice(cells)
-        self.mobs.append(Mob(p, Mob.Type.zombie))
+        m = Mob(p, Mob.Type.zombie)
+        self.mobs[m.id] = m
 
     def send_environment(self):
         env = {"what": "environment"}
@@ -91,7 +92,7 @@ class ActionSite(geometry.Area):
         yield from self.player.send(env)
 
     def get_object_dict(self):
-        return {"{}".format(o.id): o.dict() for o in self.mobs
+        return {"{}".format(o.id): o.dict() for o in self.mobs.values()
                 if o.pos.dst_sq(self.player.creature.pos) <= model.SIGHT*model.SIGHT}
 
 

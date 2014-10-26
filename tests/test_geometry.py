@@ -103,3 +103,8 @@ class TestGeometry(unittest.TestCase):
         #draw(a.cells())
         self.assertTrue(set(a.cells()) >= set(a.perimeter()))
 
+    def test_center(self):
+        a = geometry.Area(5)
+        self.assertEqual(a.center, (2, 2))
+        b = geometry.Area(6)
+        self.assertEqual(b.center, (2.5, 2.5))

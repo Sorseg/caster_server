@@ -1,8 +1,6 @@
 import collections
 from enum import Enum
-import json
 from peewee import SqliteDatabase, IntegerField, CharField, ForeignKeyField, CompositeKey, Model
-import os
 
 #Temporary terrain container:
 from PIL import Image
@@ -80,7 +78,9 @@ class Creature(Object):
             what="creature",
             coords=self.pos,
             name=self.name,
-            sight=self.sight
+            sight=self.sight,
+            hp=self.hp,
+            max_hp=self.max_hp
         )
 
 
@@ -105,15 +105,15 @@ def get_creature(login, password) -> Creature:
     return c.get()
 
 
-def get_pixel(coord)->Pixel:
+def get_pixel(coord: tuple)->Pixel:
     pixel = list(map_data[coord[0], coord[1]])
     pixel.append('wall' if all(c < 200 for c in pixel) else 'floor')
     return Pixel(*pixel)
 
 
-def get_environment(creature):
+def get_environment(creature: Creature):
 
-    a = geometry.Area(SIGHT*2, center=creature.pos, circle=True)
+    a = geometry.Area(SIGHT*2+1, center=creature.pos, circle=True)
     res = {}
     for cell in a.cells():
         p = get_pixel(cell)
