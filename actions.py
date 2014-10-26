@@ -34,7 +34,7 @@ class Actions(RPCBase):
         if who not in self.player.site.mobs:
             return self.player.send(dict(
                 what="error",
-                msg="unknown target to attack:{}".format(who)
+                msg="Unknown target for attack:{}".format(who)
             ))
         self.player.site.mobs.pop(who)
         yield from self.player.send(dict(
