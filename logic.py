@@ -48,6 +48,9 @@ class Player:
     def send_environment(self):
         return self.site.send_environment()
 
+    def send_objects(self):
+        return self.site.send_objects()
+
 
 class ActionSite(geometry.Area):
     sites = []
@@ -75,6 +78,7 @@ class ActionSite(geometry.Area):
         if random.randint(0, 4) < 1:
             self.generate_enemies()
         yield from self.send_environment()
+        yield from self.send_objects()
 
     def generate_enemies(self):
         gen_perimeter = geometry.Area(model.SIGHT*2+3, center=self.center).perimeter()
@@ -88,8 +92,12 @@ class ActionSite(geometry.Area):
     def send_environment(self):
         env = {"what": "environment"}
         env.update(model.get_environment(self.player.creature))
-        env.update(objects=self.get_object_dict())
         yield from self.player.send(env)
+
+    def send_objects(self):
+        obj = {"what": "objects"}
+        obj.update(objects=self.get_object_dict())
+        yield from self.player.send(obj)
 
     def get_object_dict(self):
         return {"{}".format(o.id): o.dict() for o in self.mobs.values()

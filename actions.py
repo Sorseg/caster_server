@@ -1,6 +1,7 @@
 from asyncio.tasks import coroutine
 from geometry import Coord
 from rpc import RPCBase
+import errors
 
 
 class Actions(RPCBase):
@@ -14,10 +15,7 @@ class Actions(RPCBase):
         c = self.player.creature
         where = Coord(*map(int, where))
         if c.pos.dst_sq(where) > 2:
-            yield from self.player.send(dict(
-                what="error",
-                msg="Walking too far"
-            ))
+            yield from self.player.send(errors.WALKING_TOO_FAR)
             return
 
         c.pos = where
@@ -32,10 +30,9 @@ class Actions(RPCBase):
     def do_attack(self, who):
         who = int(who)
         if who not in self.player.site.mobs:
-            return self.player.send(dict(
-                what="error",
-                msg="Unknown target for attack:{}".format(who)
-            ))
+            error = dict(errors.UNKNOWN_TARGET)
+            error.update(target=who)
+            return self.player.send(error)
         self.player.site.mobs.pop(who)
         yield from self.player.send(dict(
             what="event",

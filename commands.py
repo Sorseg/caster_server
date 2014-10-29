@@ -1,4 +1,5 @@
 import json
+import errors
 from logic import Player, LoginException
 from rpc import RPCBase
 
@@ -13,14 +14,16 @@ class Commands(RPCBase):
         try:
             self.player.login(login, password)
         except LoginException as e:
-            yield from self.player.protocol.send(json.dumps({"what": "error",
-                                                        "msg": "Login failed: {}".format(e.msg)}))
+            yield from self.player.protocol.send(json.dumps(
+                errors.LOGIN_FAIL
+            ))
             return
 
-        crt = {"what": "creature"}
+        crt = dict(what="creature")
         crt.update(self.player.creature.dict())
         yield from self.player.send(crt)
         yield from self.player.send_environment()
+        yield from self.player.send_objects()
 
     def do_action(self, **action):
         self.player.action = action
@@ -29,3 +32,4 @@ class Commands(RPCBase):
     def disconnect(self):
         if self.player:
             self.player.disconnect()
+            self.player = None
