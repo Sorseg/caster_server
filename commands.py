@@ -13,7 +13,7 @@ class Commands(RPCBase):
 
         try:
             self.player.login(login, password)
-        except LoginException as e:
+        except LoginException:
             yield from self.player.protocol.send(json.dumps(
                 errors.LOGIN_FAIL
             ))

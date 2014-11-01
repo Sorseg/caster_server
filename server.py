@@ -4,15 +4,19 @@ TODO:
 - connection timeout
 """
 import asyncio
+import json
 import signal
 
 import websockets
 import logging
+from websockets.server import WebSocketServerProtocol
 import commands
 from commands import Commands
 from logic import Player
 
 PORT = 7778
+PROTOCOL_VERSION = 1
+
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
@@ -27,10 +31,14 @@ def interrupt(*args):
 signal.signal(signal.SIGINT, interrupt)
 
 
+def send_protocol_version(protocol: WebSocketServerProtocol):
+    yield from protocol.send(json.dumps(dict(what="protocol", version=PROTOCOL_VERSION)))
+
+
 @asyncio.coroutine
-def handler(protocol, uri):
-    player = Player()
-    player.protocol = protocol
+def handler(protocol: WebSocketServerProtocol, uri):
+    player = Player(protocol)
+    yield from send_protocol_version(protocol)
     command_dispatcher = Commands(player)
     while protocol.open:
         message = yield from protocol.recv()

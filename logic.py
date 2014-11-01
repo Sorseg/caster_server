@@ -23,6 +23,9 @@ class Player:
     action = None
     visible_area = geometry.Area(model.SIGHT*2, circle=True)
 
+    def __init__(self, protocol):
+        self.protocol = protocol
+
     def send(self, msg: dict):
         return self.protocol.send(json.dumps(msg))
 
